@@ -1,0 +1,8 @@
+DEFAULT autoinstall
+TIMEOUT 30
+PROMPT 0
+
+LABEL autoinstall
+    MENU LABEL Debian 12 Automated Install
+    KERNEL debian-installer/amd64/linux
+    APPEND initrd=debian-installer/amd64/initrd.gz auto=true priority=critical preseed/url=http://192.168.56.10/preseed.cfg
