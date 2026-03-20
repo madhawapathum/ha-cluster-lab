@@ -3,6 +3,9 @@
 This guide walks through building a PXE provisioning server from scratch on **Debian 12 (Bookworm) — netinst image**.
 When complete, the server will automatically install Debian on any node VM that boots from the network.
 
+> **Navigation**
+> - Next: [Pacemaker + Corosync Setup](./pacemaker-corosync-setup.md)
+
 ---
 
 ## Overview

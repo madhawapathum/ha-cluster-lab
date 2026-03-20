@@ -40,27 +40,21 @@ Build a small, fully automated Linux cluster that can detect node failures and r
 | node-2     | HA cluster member       | 192.168.56.102  |
 | node-3     | HA cluster member       | 192.168.56.103  |
 
-Each VM has **two network adapters**:
-- **Host-Only (`eth0`)** — provisioning and cluster communication
-- **NAT (`eth1`)** — internet access for package downloads
+**Network setup:**
+- **Host-Only (`enp0s8`)** — provisioning and cluster communication (`192.168.56.0/24`)
+- Nodes access the internet through the **PXE server's NAT interface** (`enp0s3`) via IP forwarding — nodes do not need their own NAT adapter
 
 ---
 
 ## Components
 
-### PXE Server
-
-The PXE server automates OS installation across all cluster nodes. It runs three services:
-
-| Service       | Purpose |
-|---------------|---------|
-| **dnsmasq**   | Acts as the DHCP server and sends PXE boot instructions to booting nodes |
-| **TFTP**      | Serves the kernel (`linux`) and initial ramdisk (`initrd.gz`) to the node over the network |
-| **Apache HTTP** | Hosts the Debian preseed file so the installer can fetch it automatically |
-
-### Cluster Nodes
-
-Three identical Debian VMs provisioned automatically via PXE. After installation, they are the target hosts for Pacemaker/Corosync cluster configuration.
+| Component       | Role |
+|-----------------|------|
+| **PXE Server**  | Provisions nodes automatically over the network — no manual OS install needed |
+| **Corosync**    | Keeps nodes in constant communication and detects failures |
+| **Pacemaker**   | Decides where resources live based on current cluster state |
+| **Keepalived**  | Manages the Virtual IP (VIP), moves it automatically when the master changes |
+| **Nginx**       | Serves the actual service — always reachable via the VIP regardless of which node is active |
 
 ---
 
@@ -88,21 +82,30 @@ No keyboard input is required on the node at any point.
 |---|-------|--------|
 | 1 | PXE provisioning server setup | ✅ Complete |
 | 2 | Automated node OS installation via preseed | ✅ Complete |
-| 3 | Pacemaker + Corosync cluster formation | 🔜 Planned |
-| 4 | Virtual IP (VIP) failover | 🔜 Planned |
-| 5 | Fencing (STONITH) to prevent split-brain | 🔜 Planned |
+| 3 | Pacemaker + Corosync cluster formation | ✅ Complete |
+| 4 | Keepalived VRRP — Virtual IP failover | ✅ Complete |
+| 5 | Nginx on all nodes — service via VIP | ✅ Complete |
 | 6 | Failure simulation and recovery testing | 🔜 Planned |
 
 ---
 
-## Planned: High-Availability Cluster (Phase 3+)
+## How the Stack Works Together
 
-Once all nodes are provisioned, the cluster will be configured with:
-
-- **Corosync** — handles low-level cluster messaging and quorum between nodes
-- **Pacemaker** — manages cluster resources (services, virtual IPs) and decides where they run
-- **Virtual IP (VIP)** — a floating IP address that moves to a healthy node automatically when one fails
-- **STONITH Fencing** — if a node stops responding, the cluster fences (forcibly powers off) the unreachable node before moving resources, preventing data corruption from a split-brain scenario
+```
+Node powers on
+    ↓
+PXE Server provisions Debian automatically over the network
+    ↓
+Corosync forms the cluster — nodes communicate and monitor each other
+    ↓
+Pacemaker manages cluster resources based on node health
+    ↓
+Keepalived holds Virtual IP 192.168.56.100 on the master node
+    ↓
+Nginx serves the service — always reachable via the VIP
+    ↓
+Node fails → Corosync detects it → Keepalived moves VIP → traffic continues
+```
 
 ---
 
@@ -132,13 +135,15 @@ ha-cluster-lab/
 | Technology      | Role |
 |-----------------|------|
 | VirtualBox      | Hypervisor for the lab environment |
-| Debian Linux    | OS for PXE server and all cluster nodes |
+| Debian Linux    | OS for the PXE server and all cluster nodes |
 | dnsmasq         | DHCP server + PXE boot instructions |
 | TFTP            | Network boot file delivery |
 | Apache HTTP     | Preseed file hosting |
 | Debian Preseed  | Unattended OS installation |
-| Pacemaker       | Cluster resource manager *(Phase 3)* |
-| Corosync        | Cluster communication and quorum *(Phase 3)* |
+| Corosync        | Cluster communication layer — detects node failures |
+| Pacemaker       | Cluster resource manager — moves resources on failure |
+| Keepalived      | VRRP — manages the Virtual IP and moves it on failover |
+| Nginx           | Web service — always reachable via the VIP |
 
 ---
 

@@ -59,3 +59,29 @@ After OS installation completed and the node rebooted, the host-only adapter (`e
 Under investigation. Likely needs a persistent network interface config in the preseed or a post-install script to ensure `eth0` is configured at boot.
 
 ---
+
+### 5. Corosync Binding to localhost (127.0.0.1)
+
+**Problem**
+Corosync showed as active and running, but nodes appeared offline in Pacemaker.
+
+**Cause**
+The most damaging problem was Corosync binding to `127.0.0.1` instead of the cluster network interface. This happened because the `/etc/hosts` file had node hostnames mapped to the loopback address, and Corosync resolved its own ring address to localhost. It could talk to itself but never reached the other nodes.
+
+**Fix**
+Replaced hostnames with explicit IP addresses in `corosync.conf`.
+
+---
+
+### 6. Pacemaker STONITH Fencing Requirement
+
+**Problem**
+Pacemaker refused to manage resources without a fencing device, marking all nodes as unclean.
+
+**Cause**
+VirtualBox has no proper fence agent, but STONITH is enabled by default.
+
+**Fix**
+Disabled STONITH for the lab and set `no-quorum-policy` appropriately to bootstrap the cluster.
+
+---
