@@ -147,6 +147,22 @@ ha-cluster-lab/
 
 ---
 
+## 🎥 Demo (Failover in Action)
+
+This demo shows:
+
+1. Service accessed via Virtual IP (VIP)
+2. Active node serving traffic
+3. Manual shutdown of active node
+4. VIP failover to backup node (~3 seconds)
+5. Service restored from new node
+
+> **Note:** Video has no audio — steps are visualized in sequence.
+
+▶️ [Watch on YouTube](https://www.youtube.com/watch?v=ckApxpqul_8)
+
+---
+
 ## Learning Objectives
 
 - Understand the full PXE boot chain (DHCP → TFTP → installer)
