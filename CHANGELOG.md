@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1](https://github.com/madhawapathum/ha-cluster-lab/compare/v1.1.0...v1.1.1) (2026-03-21)
+
+
+### Bug Fixes
+
+* Updated Readme file ([4e07a9e](https://github.com/madhawapathum/ha-cluster-lab/commit/4e07a9ec8e23975c3bb5e1c24f1895f27238fa69))
+
 ## [1.1.0](https://github.com/madhawapathum/ha-cluster-lab/compare/v1.0.0...v1.1.0) (2026-03-20)
 
 
